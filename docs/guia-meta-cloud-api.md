@@ -106,6 +106,50 @@ El token temporal caduca a las 24 h. Para uno permanente:
 
 En **API Setup → Agregar número de teléfono**: un número que **no** esté registrado en la app de WhatsApp (o elimínalo de ella antes), nombre visible aprobado por Meta y verificación del negocio para subir los límites de mensajería (empiezan en 250 conversaciones iniciadas por el negocio cada 24 h).
 
+## 9. Tu primer mensaje real desde el panel (paso a paso)
+
+Con los pasos 1 a 4 hechos (app creada, tu número verificado como destinatario y el `.env` completo):
+
+1. **Activa el modo real** en `backend/.env` y reinicia la API y el worker:
+   ```ini
+   WHATSAPP_MODE=cloud
+   WHATSAPP_TOKEN=EAAG...                 # token temporal o permanente
+   WHATSAPP_PHONE_NUMBER_ID=1234567890
+   WHATSAPP_BUSINESS_ACCOUNT_ID=9876543210
+   ```
+   El aviso amarillo «MODO SIMULACIÓN» desaparece del panel y **Webhook y sistema** muestra *Modo: cloud* y *Token configurado: sí*.
+2. **Contacto:** en **Contactos → Nuevo contacto** registra tu número con código de país y sin `+` ni espacios (p. ej. `584241234567`), con **opt-in** y su origen, y ponle una etiqueta, por ejemplo `prueba`.
+3. **Plantilla `hello_world`:** Meta la trae aprobada en toda cuenta nueva. En **Plantillas → Nueva** crea una con nombre `hello_world`, idioma **Inglés (en_US)**, categoría *UTILITY* y cuerpo `Welcome and congratulations!!`. Guárdala y pulsa **Consultar estado en Meta**: pasará a **APROBADA** porque ya existe en tu cuenta.
+4. **Campaña:** en **Campañas → Nueva** elige la plantilla `hello_world`, el segmento con la etiqueta `prueba` y pulsa **Lanzar**.
+5. En segundos te llega el mensaje *Hello World* a tu WhatsApp. En el detalle de la campaña el mensaje pasa a **enviado**.
+
+> **Estados entregado/leído y respuestas:** Meta los informa por webhook. Sin el paso 5 (ngrok + webhook) el mensaje sí llega, pero en el panel se queda en *enviado* y no verás las respuestas del cliente.
+
+Para tus propias plantillas (`promo_temporada`, `carrito_abandonado`…): las que vienen en los datos de demostración figuran como aprobadas solo en el sandbox. En modo real **duplícalas** (o créalas de nuevo), pulsa **Enviar a revisión de Meta** y espera la aprobación antes de usarlas.
+
+## 10. Solución de problemas
+
+| Síntoma / error de Meta | Causa | Solución |
+|---|---|---|
+| No llega nada y el panel muestra el aviso amarillo | Sigue en `WHATSAPP_MODE=sandbox` | Cambia a `cloud` y reinicia API **y** worker |
+| `(#131030) Recipient phone number not in allowed list` | Con el número de prueba solo se puede escribir a destinatarios verificados | Paso 4: agrega tu número en **API Setup → Para → Administrar lista** |
+| `(#190) Error validating access token` / sesión expirada | El token temporal dura 24 h | Genera otro en **API Setup** o crea el permanente (paso 7) |
+| `(#132001) Template name does not exist in the translation` | La plantilla no existe en Meta con ese nombre **e idioma** | Revisa nombre e idioma (`hello_world` es `en_US`) o envíala a revisión |
+| `(#131047) Re-engagement message` | Texto libre fuera de la ventana de 24 h | Inicia la conversación con una plantilla aprobada |
+| El mensaje queda en *en cola* | El worker de Celery no está corriendo | Levanta el worker (`celery -A app.worker worker --pool=threads`) o usa `CELERY_EAGER=true` |
+| El número no se reconoce | Formato incorrecto | Usa formato internacional sin `+`: `58` + `4241234567` |
+
+Prueba directa con la API, sin pasar por el panel (útil para descartar problemas de configuración):
+
+```bash
+curl -X POST "https://graph.facebook.com/v21.0/$WHATSAPP_PHONE_NUMBER_ID/messages" \
+  -H "Authorization: Bearer $WHATSAPP_TOKEN" -H "Content-Type: application/json" \
+  -d '{"messaging_product":"whatsapp","to":"584241234567","type":"template",
+       "template":{"name":"hello_world","language":{"code":"en_US"}}}'
+```
+
+Si este comando funciona pero el panel no, revisa que el worker esté activo y que el `.env` que lee la API sea el mismo.
+
 ## Políticas que el sistema hace cumplir
 
 | Política de WhatsApp Business | Dónde se aplica |

@@ -31,6 +31,15 @@ Incluye un **modo sandbox** que no envía nada real: genera notificaciones con l
 | **Eventos de tienda** | **Webhook y sistema** |
 | ![Eventos](docs/capturas/10-eventos.png) | ![Sistema](docs/capturas/11-sistema.png) |
 
+## Documentación
+
+| Documento | Contenido |
+|---|---|
+| 📱 **[Configurar WhatsApp y enviar mensajes reales](docs/guia-meta-cloud-api.md)** | Cuenta de desarrollador de Meta, token, número de prueba, destinatarios, webhook, plantillas, **primer mensaje desde el panel paso a paso** y solución de errores frecuentes. |
+| 🛠️ **[Cómo se construyó](docs/como-se-construyo.md)** | Problema, requisitos, decisiones técnicas, orden de construcción, problemas resueltos (duplicados, rate limit, seguridad del webhook) y aprendizajes. |
+
+> Por defecto el sistema arranca en **modo simulación** (`WHATSAPP_MODE=sandbox`) y no envía nada real. Para que los mensajes lleguen a un WhatsApp, sigue la guía de configuración.
+
 ---
 
 ## Arquitectura

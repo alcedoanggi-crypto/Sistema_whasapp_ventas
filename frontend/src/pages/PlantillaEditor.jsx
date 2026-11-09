@@ -210,7 +210,7 @@ export default function PlantillaEditor() {
             {id && estado && ['BORRADOR', 'RECHAZADA'].includes(estado.estado) && (
               <Boton variante="secundario" onClick={enviarAMeta} disabled={ocupado}>Enviar a revisión de Meta</Boton>
             )}
-            {id && estado?.estado === 'PENDIENTE' && <Boton variante="secundario" onClick={sincronizar} disabled={ocupado}>Consultar estado en Meta</Boton>}
+            {id && ['PENDIENTE', 'BORRADOR', 'RECHAZADA'].includes(estado?.estado) && <Boton variante="secundario" onClick={sincronizar} disabled={ocupado}>Consultar estado en Meta</Boton>}
             {bloqueada && <Boton variante="secundario" onClick={duplicar}>Duplicar como nueva versión</Boton>}
             <Boton variante="fantasma" onClick={mostrarJson}>{'{ }'} JSON para Meta</Boton>
             {id && <Boton variante="fantasma" className="ml-auto text-red-600" onClick={eliminar}>Eliminar</Boton>}
